@@ -280,8 +280,15 @@ body.no-map .map, body.no-map .legend { position: static; }
 .store-item__foot { grid-area: act; }
 .store-item:hover { background: #EFEFF2; }
 .store-item.is-selected { background: #fff; border-color: var(--ink); }
-.store-item__top { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
-.store-item__name { font-size: 15px; font-weight: 700; }
+.store-item__top {
+  display: flex; align-items: center; gap: 7px;
+  flex-wrap: nowrap; min-width: 0;   /* 거리 배지가 줄바꿈되어 행이 커지는 것 방지 */
+}
+.store-item__name {
+  font-size: 16px; font-weight: 700;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.store-item .badge { flex-shrink: 0; }
 .badge {
   display: inline-flex; align-items: center; height: 22px; padding: 0 8px;
   border-radius: 5px; font-size: 12px; font-weight: 700;

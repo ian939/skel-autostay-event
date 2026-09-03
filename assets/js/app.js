@@ -41,6 +41,9 @@
 
   function badgeClass(type) { return type === '직영' ? 'badge--direct' : 'badge--fr'; }
 
+  // 리스트용 짧은 이름. 모든 행이 "오토스테이"로 시작하므로 접두어는 잡음이다.
+  function shortName(name) { return name.replace(/^오토스테이\s*/, ''); }
+
   function setStatus(msg, kind) {
     el.status.textContent = msg || '';
     el.status.className = 'status' + (msg ? ' is-' + (kind || 'ok') : '');
@@ -152,7 +155,7 @@
         '<button type="button" class="store-item' +
           (s.id === state.selectedId ? ' is-selected' : '') + '" data-id="' + s.id + '">' +
           '<span class="store-item__top">' +
-            '<span class="store-item__name">' + esc(s.name) + '</span>' +
+            '<span class="store-item__name">' + esc(shortName(s.name)) + '</span>' +
             '<span class="badge ' + badgeClass(s.type) + '">' + esc(s.type) + '</span>' +
             dist +
           '</span>' +
