@@ -15,7 +15,7 @@
  * 이 키는 클라이언트에 노출되는 것이 정상이다. 보안은 위 도메인
  * 화이트리스트가 담당하므로, 등록 도메인을 최소로 유지하는 것이 곧 보안이다.
  */
-var KAKAO_JS_KEY = 'PASTE_KAKAO_JAVASCRIPT_KEY_HERE';
+var KAKAO_JS_KEY = '825a7e9f4444cd7f3ad90a4689fffd8f';
 
 // 지도 초기 레벨 (setBounds가 대개 덮어쓰지만, bounds 실패 시 폴백으로 쓰인다)
 var MAP_DEFAULT_LEVEL = 12;

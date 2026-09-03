@@ -285,6 +285,23 @@
     }
     window.addEventListener('resize', relayout);
     window.addEventListener('orientationchange', relayout);
+
+    // 지도가 화면 밖(스크롤 아래)에 있으면 카카오가 컨테이너 크기를 0으로 보고
+    // setBounds가 조용히 실패한다. 처음 화면에 들어오는 순간 relayout + 재fit 한다.
+    // (실제로 이 처리가 없으면 지도가 세계지도 좌상단을 보여준다)
+    if (window.IntersectionObserver) {
+      var io = new IntersectionObserver(function (entries) {
+        for (var i = 0; i < entries.length; i++) {
+          if (entries[i].isIntersecting) {
+            map.relayout();
+            fitTo(visibleStores());
+            io.disconnect();
+            break;
+          }
+        }
+      }, { threshold: 0.01 });
+      io.observe(el.map);
+    }
   }
 
   function fitTo(list) {
