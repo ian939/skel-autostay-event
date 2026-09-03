@@ -20,6 +20,14 @@ var KAKAO_JS_KEY = '825a7e9f4444cd7f3ad90a4689fffd8f';
 // 지도 초기 레벨 (setBounds가 대개 덮어쓰지만, bounds 실패 시 폴백으로 쓰인다)
 var MAP_DEFAULT_LEVEL = 12;
 
+/**
+ * 최대 축소 레벨. 실측한 카카오 레벨-축척 대응은 다음과 같다.
+ *   11 = 16km / 12 = 32km / 13 = 64km / 14 = 128km
+ * 참여 지점이 수도권~구미·대구에 걸쳐 있어 64km면 전 지점이 들어온다.
+ * 이보다 더 축소하면 한반도 밖 여백만 넓어져 의미가 없으므로 13에서 막는다.
+ */
+var MAP_MAX_LEVEL = 13;
+
 // 장소 검색 후보 최대 노출 개수
 var SEARCH_MAX_RESULTS = 5;
 

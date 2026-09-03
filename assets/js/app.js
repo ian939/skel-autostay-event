@@ -280,6 +280,8 @@
       center: new kakao.maps.LatLng(37.5665, 126.9780),
       level: MAP_DEFAULT_LEVEL
     });
+    // 64km(레벨 13)보다 더 축소되지 않게 한다. 줌 컨트롤·핀치·더블탭에 모두 적용된다.
+    map.setMaxLevel(MAP_MAX_LEVEL);
     map.addControl(new kakao.maps.ZoomControl(), kakao.maps.ControlPosition.RIGHT);
 
     // MarkerImage는 2개만 만들어 전 마커가 공유한다. offset은 핀 끝(bottom-center).
@@ -348,6 +350,9 @@
     if (state.origin) b.extend(new kakao.maps.LatLng(state.origin.lat, state.origin.lng));
     // 패딩이 없으면 외곽 핀이 뷰포트 경계에 붙는다
     map.setBounds(b, 48, 48, 48, 48);
+    // setBounds는 setMaxLevel을 무시하고 더 축소할 수 있다(좁은 화면에서 전 지점을
+    // 담으려 할 때). 상한을 넘으면 되돌린다.
+    if (map.getLevel() > MAP_MAX_LEVEL) map.setLevel(MAP_MAX_LEVEL);
   }
 
   function syncMarkers() {
