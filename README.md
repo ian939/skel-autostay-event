@@ -80,16 +80,19 @@ python tools/build_stores.py
 ## 파일 구조
 
 ```
-index.html                  단일 페이지
-assets/css/style.css        스타일 (모바일 우선, 880px에서 데스크톱 2단)
+index.html                  랜딩 페이지 (혜택·CTA·유의사항 포함)
+app.html                    웹뷰 전용 페이지 (지도·검색·리스트만)
+assets/css/style.css        공통 스타일 (모바일 우선, 880px에서 데스크톱 2단)
+assets/css/app-webview.css  웹뷰 레이아웃 오버라이드
 assets/js/config.js         ★ 카카오 키 — 교체 지점
 assets/js/stores.js         지점 데이터 (자동생성)
 assets/js/geo.js            거리 계산 · 표기 · 카카오 링크 (SDK 불필요)
 assets/js/app.js            상태 · 렌더 · 지도 · 내 위치 · 검색
 assets/img/pin-*.svg        마커 (직영 레드 / 가맹 블루 / 선택)
 tools/build_stores.py       지점 데이터 생성기
-tools/build_single.py       단일 HTML 빌더 (앱 웹뷰용)
-dist/index.html             빌드 산출물 — 파일 하나로 합친 버전
+tools/build_single.py       단일 HTML 빌더
+dist/index.html             랜딩 단일 파일
+dist/app.html               웹뷰 단일 파일
 ```
 
 ---
@@ -111,10 +114,34 @@ dist/index.html             빌드 산출물 — 파일 하나로 합친 버전
 
 ---
 
-## 앱 웹뷰에 넣기 (단일 HTML)
+## 앱 웹뷰에 넣기
 
-`python tools/build_single.py` → **`dist/index.html` 파일 하나 (약 65KB)**.
-CSS·JS·마커 SVG·파비콘이 모두 인라인되어 `assets/` 참조가 0개다.
+### 두 가지 진입 페이지
+
+원본 랜딩은 그대로 두고, 웹뷰 전용 페이지를 따로 둔다. **JS(`stores.js`·`geo.js`·`app.js`)와
+`style.css`는 두 페이지가 공유**하므로 지점 데이터를 한 번 수정하면 양쪽에 동시 반영된다.
+
+| | 소스 | 단일 파일 | 용도 |
+|---|---|---|---|
+| 랜딩 | `index.html` | `dist/index.html` (65KB) | 히어로·혜택·이용방법·CTA·유의사항 포함. 웹/카톡 공유용 |
+| **웹뷰** | `app.html` + `assets/css/app-webview.css` | `dist/app.html` (61KB) | 지도·검색·지점 리스트만. 앱 안에 넣는 용도 |
+
+```bash
+python tools/build_single.py          # 둘 다
+python tools/build_single.py app      # 웹뷰용만
+```
+
+### 웹뷰 페이지가 랜딩과 다른 점
+
+- 히어로·혜택·이용방법·CTA·유의사항·푸터·하단 고정 CTA 바 **없음** (앱이 담당)
+- **문서가 스크롤되지 않고 리스트 영역만 스크롤**한다 (앱 화면형). `overscroll-behavior`로
+  리스트 끝에서 앱 화면이 당겨지는 것도 막았다
+- 지도가 화면 최상단. `safe-area-inset-top`으로 노치를 피한다
+- `user-scalable=no` — 앱 화면처럼 더블탭 확대를 막는다 (지도 자체 확대는 동작)
+- 가로 모드(720px 이상 & 높이 560px 이하)에서는 지도와 리스트를 좌우로 나눈다
+- `.todo` 플레이스홀더가 없다 (금액·기간 문구를 담지 않으므로)
+
+`assets/` 참조는 두 단일 파일 모두 0개다.
 
 ### 실측한 동작 범위
 
@@ -130,8 +157,8 @@ SDK 스크립트 자체와 타일은 받아지지만, **검색 서브 API가 401
 
 ### 그래서 권장 방식
 
-**원격 URL 로드**를 권한다. 웹뷰가 `https://ian939.github.io/skel-autostay-event/`
-(또는 자사 도메인)를 그대로 열면 검색까지 전부 동작하고, 페이지 수정 시
+**원격 URL 로드**를 권한다. 웹뷰가 `.../app.html`
+(또는 자사 도메인)을 그대로 열면 검색까지 전부 동작하고, 페이지 수정 시
 앱 재배포 없이 반영된다.
 
 ```kotlin
@@ -144,18 +171,18 @@ webView.webChromeClient = object : WebChromeClient() {
         origin: String?, callback: GeolocationPermissions.Callback?
     ) { callback?.invoke(origin, true, false) }   // 앱에서 위치 권한을 이미 받은 경우
 }
-webView.loadUrl("https://ian939.github.io/skel-autostay-event/")
+webView.loadUrl("https://ian939.github.io/skel-autostay-event/app.html")
 ```
 
 ```swift
 // iOS - WKWebView
 let cfg = WKWebViewConfiguration()
 let web = WKWebView(frame: .zero, configuration: cfg)
-web.load(URLRequest(url: URL(string: "https://ian939.github.io/skel-autostay-event/")!))
+web.load(URLRequest(url: URL(string: "https://ian939.github.io/skel-autostay-event/app.html")!))
 // Info.plist: NSLocationWhenInUseUsageDescription 필요
 ```
 
-**로컬 에셋으로 넣어야 한다면** `dist/index.html`을 쓰되, 검색이 막히는 것을
+**로컬 에셋으로 넣어야 한다면** `dist/app.html`을 쓰되, 검색이 막히는 것을
 감수해야 한다. 이때는 `file://` 대신 커스텀 스킴이나 로컬 서버로 실제 도메인을
 부여하고 그 도메인을 카카오 콘솔에 등록하면 검색도 살아난다.
 

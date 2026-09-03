@@ -1,14 +1,14 @@
-# index.html + CSS + JS + SVG를 하나의 HTML 파일로 합친다 (앱 웹뷰 배포용)
+# 각 진입 페이지를 CSS·JS·SVG가 모두 인라인된 단일 HTML로 합친다 (앱 웹뷰 배포용)
 """
 왜 필요한가:
   앱 웹뷰에 로컬 에셋으로 넣을 때 파일이 여러 개면 경로·번들 설정이 늘어난다.
-  단일 HTML이면 assets/에 파일 하나만 두고 loadUrl 하면 끝난다.
+  단일 HTML이면 assets에 파일 하나만 두고 loadUrl 하면 끝난다.
 
 무엇을 인라인하는가:
-  - assets/css/style.css      -> <style>
-  - assets/js/*.js (4개)      -> <script> (config -> stores -> geo -> app 순서 유지)
-  - assets/img/pin-*.svg      -> data URI (JS 안의 경로 문자열을 치환)
-  - assets/img/favicon.svg    -> data URI
+  - assets/css/style.css (+ 페이지별 추가 CSS)  -> <style>
+  - assets/js/*.js 4개                          -> <script> (config -> stores -> geo -> app 순서)
+  - assets/img/pin-*.svg                        -> data URI (JS 안의 경로 문자열을 치환)
+  - assets/img/favicon.svg                      -> data URI
 
 무엇을 인라인할 수 없는가 (원격 유지):
   - 카카오맵 SDK (dapi.kakao.com) — 런타임에 타일·검색을 서버에서 받아오므로
@@ -16,7 +16,10 @@
   - Noto Sans KR 웹폰트 — 인라인하면 파일이 수 MB가 된다.
     폰트 로드 실패 시 시스템 한글 폰트로 폴백되므로 원격 유지가 낫다.
 
-출력: dist/index.html (기본) 또는 --out 지정
+사용법:
+  python tools/build_single.py            # 전체
+  python tools/build_single.py app        # 웹뷰용만
+  python tools/build_single.py landing    # 랜딩용만
 """
 import base64
 import io
@@ -35,6 +38,12 @@ JS_ORDER = [
 ]
 PINS = ["pin-direct.svg", "pin-franchise.svg", "pin-selected.svg"]
 
+# 진입 페이지별: (소스 HTML, 추가 CSS 목록, 출력 경로)
+PAGES = {
+    "landing": ("index.html", [], "dist/index.html"),
+    "app": ("app.html", ["assets/css/app-webview.css"], "dist/app.html"),
+}
+
 
 def read(rel):
     with io.open(os.path.join(ROOT, rel), encoding="utf-8") as f:
@@ -47,18 +56,23 @@ def svg_data_uri(rel):
     return "data:image/svg+xml;base64," + b64
 
 
-def main():
-    out_rel = "dist/index.html"
-    if "--out" in sys.argv:
-        out_rel = sys.argv[sys.argv.index("--out") + 1]
+def build(page):
+    src_html, extra_css, out_rel = PAGES[page]
+    html = read(src_html)
 
-    html = read("index.html")
-
-    # 1) CSS 인라인
-    css = read(CSS)
+    # 1) CSS 인라인. style.css 다음에 페이지별 추가 CSS를 이어 붙여 순서를 보존한다.
     link = '<link rel="stylesheet" href="assets/css/style.css">'
-    assert link in html, "CSS link 태그를 찾을 수 없음"
-    html = html.replace(link, "<style>\n" + css.rstrip() + "\n</style>")
+    assert link in html, "CSS link 태그를 찾을 수 없음: " + src_html
+
+    css_parts = [read(CSS).rstrip()]
+    for extra in extra_css:
+        tag = '<link rel="stylesheet" href="%s">' % extra
+        assert tag in html, "추가 CSS link를 찾을 수 없음: " + extra
+        html = html.replace("\n" + tag, "").replace(tag, "")
+        css_parts.append(
+            "/* ===== %s ===== */\n%s" % (os.path.basename(extra), read(extra).rstrip())
+        )
+    html = html.replace(link, "<style>\n" + "\n\n".join(css_parts) + "\n</style>")
 
     # 2) 파비콘을 data URI로
     fav = '<link rel="icon" href="assets/img/favicon.svg" type="image/svg+xml">'
@@ -76,30 +90,30 @@ def main():
     for rel in JS_ORDER:
         code = read(rel)
         for name, uri in pin_uris.items():
-            # app.js 안의 'assets/img/pin-xxx.svg' 문자열을 data URI로 바꾼다
             code = code.replace("'assets/img/" + name + "'", "'" + uri + "'")
-        bundle.append("/* ===== %s ===== */\n%s" % (os.path.basename(rel), code.rstrip()))
+        bundle.append(
+            "/* ===== %s ===== */\n%s" % (os.path.basename(rel), code.rstrip())
+        )
 
-    # 개별 script 태그 4개를 제거하고 한 덩어리로 대체
     for rel in JS_ORDER:
         tag = '<script src="%s"></script>' % rel
         assert tag in html, "script 태그를 찾을 수 없음: " + rel
-        html = html.replace(tag + "\n", "", 1)
+        html = html.replace("\n" + tag, "", 1)
         html = html.replace(tag, "", 1)
 
     html = html.replace(
-        "</body>",
-        "<script>\n" + "\n\n".join(bundle) + "\n</script>\n</body>",
+        "</body>", "<script>\n" + "\n\n".join(bundle) + "\n</script>\n</body>"
     )
 
     # 4) 인라인 누락 검사.
     #    인라인된 <script> 본문에는 JS가 문자열로 조립하는 href=/src= 가 들어 있어
-    #    문자열 스캔으로는 오탐이 난다. 그래서 "우리가 인라인해야 할 파일 경로"가
-    #    남아 있는지만 정확히 확인한다.
-    must_inline = [CSS] + JS_ORDER + ["assets/img/" + n for n in PINS] +                   ["assets/img/favicon.svg"]
+    #    문자열 전체를 훑으면 오탐이 난다. 그래서 "인라인해야 할 파일 경로"가
+    #    속성값으로 남아 있는지만 정확히 확인한다.
+    must_inline = [CSS] + extra_css + JS_ORDER
+    must_inline += ["assets/img/" + n for n in PINS] + ["assets/img/favicon.svg"]
     leftovers = [f for f in must_inline if ('"%s"' % f) in html]
     if leftovers:
-        sys.exit("[FAIL] 인라인되지 않은 로컬 참조: %s" % leftovers)
+        sys.exit("[FAIL] %s: 인라인되지 않은 로컬 참조 %s" % (src_html, leftovers))
 
     out_abs = os.path.join(ROOT, out_rel)
     os.makedirs(os.path.dirname(out_abs), exist_ok=True)
@@ -107,14 +121,24 @@ def main():
         f.write(html)
 
     size = len(html.encode("utf-8"))
-    remote = sorted(set(
-        re.findall(r'(?:src|href)="(https?://[^"]+)"', html)
-    ))
-    print("[OK] %s  (%.1f KB, 파일 1개)" % (out_rel, size / 1024))
-    print("     남은 원격 의존:")
-    for r in remote:
-        print("       - " + r.split("?")[0])
-    print("     (카카오 SDK는 타일/검색을 서버에서 받으므로 인터넷 연결 필요)")
+    print("[OK] %-14s %6.1f KB   <- %s" % (out_rel, size / 1024, src_html))
+    return set(re.findall(r'(?:src|href)="(https?://[^"]+)"', html))
+
+
+def main():
+    targets = [a for a in sys.argv[1:] if a in PAGES] or list(PAGES)
+    remote = set()
+    for page in targets:
+        remote |= build(page)
+
+    print()
+    print("남은 원격 의존 (인라인 불가):")
+    for r in sorted(remote):
+        print("  - " + r.split("?")[0])
+    print("  - https://dapi.kakao.com/v2/maps/sdk.js   (JS에서 동적 로드)")
+    print()
+    print("카카오 지도 타일·장소검색은 런타임에 카카오 서버에서 받아오므로")
+    print("인터넷 연결이 필요하다. 완전 오프라인 동작은 불가능하다.")
 
 
 if __name__ == "__main__":

@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<!-- 웹뷰 전용: 사용자 확대를 막아 앱 화면처럼 동작하게 한다 -->
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<title>참여 지점 찾기</title>
+<meta name="format-detection" content="telephone=no">
+<link rel="icon" href="assets/img/favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/css/style.css">
+<link rel="stylesheet" href="assets/css/app-webview.css">
+</head>
+<body class="webview">
+
+<!-- 지도 (상단 고정) -->
+<div class="wv-map-wrap">
+  <div id="map" class="map" role="application" aria-label="참여 지점 지도"></div>
+  <ul class="legend" aria-label="핀 범례">
+    <li><i class="dot dot--direct"></i>직영점</li>
+    <li><i class="dot dot--fr"></i>가맹점</li>
+  </ul>
+</div>
+
+<!-- 검색 · 필터 · 추천 -->
+<div class="wv-controls">
+  <div class="origin-bar">
+    <button type="button" id="btn-locate" class="btn btn--dark btn--locate">
+      <svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3.2" fill="currentColor"/><circle cx="12" cy="12" r="7.2" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M12 1.6v3.2M12 19.2v3.2M1.6 12h3.2M19.2 12h3.2" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+      <span class="wv-label">내 위치</span>
+    </button>
+    <form id="search-form" class="search" role="search">
+      <label class="sr-only" for="q">장소 또는 주소 검색</label>
+      <input id="q" name="q" type="search" placeholder="매장명, 주소 검색" enterkeyhint="search" autocomplete="off">
+      <button type="submit" class="search__btn" aria-label="검색">
+        <svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5" fill="none" stroke="currentColor" stroke-width="2"/><path d="M15.4 15.4 21 21" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+      </button>
+    </form>
+  </div>
+
+  <p id="status" class="status" role="status" aria-live="polite"></p>
+  <ul id="candidates" class="candidates" hidden></ul>
+  <div id="recommend" class="recommend" hidden></div>
+  <div class="chips" role="tablist" aria-label="지역 필터" id="chips"></div>
+</div>
+
+<!-- 지점 리스트 -->
+<div class="wv-list">
+  <div class="list-head">
+    <h3 id="list-title">참여 지점 15곳</h3>
+    <span class="muted">영업시간</span>
+  </div>
+  <ul id="list" class="store-list"></ul>
+  <p class="note">*영업시간은 매장 사정에 따라 변동될 수 있습니다.<br>거리는 직선거리 기준이며 실제 이동거리와 다를 수 있습니다.</p>
+</div>
+
+<script src="assets/js/config.js"></script>
+<script src="assets/js/stores.js"></script>
+<script src="assets/js/geo.js"></script>
+<script src="assets/js/app.js"></script>
+</body>
+</html>
