@@ -1,0 +1,239 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>오토스테이 참여 지점 찾기 | SK일렉링크 제휴 이벤트</title>
+<meta name="description" content="SK일렉링크 회원 전용. 전국 15개 오토스테이 참여 지점에서 세차 20% 할인, 세차 구독 25% 할인. 가까운 지점을 찾아보세요.">
+<meta property="og:title" content="오토스테이 참여 지점 찾기 | SK일렉링크 제휴 이벤트">
+<meta property="og:description" content="전국 15개 오토스테이 참여 지점에서 세차 20% 할인, 세차 구독 25% 할인.">
+<meta property="og:type" content="website">
+<link rel="icon" href="assets/img/favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body>
+
+<!-- 히어로 -->
+<header class="hero">
+  <div class="wrap">
+    <p class="eyebrow">SK일렉링크 × 오토스테이</p>
+    <h1 class="hero__title">충전하고,<br><span class="accent">세차까지 싸게.</span></h1>
+    <p class="hero__lead">
+      SK일렉링크 회원이라면 전국 <strong>15개 오토스테이 지점</strong>에서<br>
+      세차 20% 할인, 세차 구독 25% 할인을 받으실 수 있습니다.
+    </p>
+
+    <ul class="offer-chips">
+      <li><span class="offer-chips__label">세차 1회권</span><strong>20<em>%</em></strong></li>
+      <li><span class="offer-chips__label">세차 구독</span><strong class="accent">25<em>%</em></strong></li>
+    </ul>
+
+    <p class="hero__period"><span class="todo">[이벤트 기간]</span> · SK일렉링크 회원 전용</p>
+    <a class="btn btn--primary" href="#finder">내 주변 지점 찾기</a>
+
+    <div class="lockup" aria-label="오토스테이 × SK일렉링크">
+      <span class="lockup__as">Autostay</span>
+      <span class="lockup__x">×</span>
+      <span class="lockup__skel"><b>SK</b> electlink</span>
+    </div>
+  </div>
+</header>
+
+<main>
+<!-- 지점 찾기 -->
+<section id="finder" class="finder-section">
+  <div class="wrap">
+    <p class="eyebrow">지점 찾기</p>
+    <h2 class="sec__title">가까운 지점부터.</h2>
+    <p class="sec__lead">
+      찾으시는 매장을 지도에서 클릭하면 자세히 볼 수 있습니다.
+      <span class="muted">수도권 12곳 · 비수도권 3곳</span>
+    </p>
+
+    <div class="origin-bar">
+      <button type="button" id="btn-locate" class="btn btn--dark btn--locate">
+        <svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3.2" fill="currentColor"/><circle cx="12" cy="12" r="7.2" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M12 1.6v3.2M12 19.2v3.2M1.6 12h3.2M19.2 12h3.2" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+        내 위치로 찾기
+      </button>
+      <form id="search-form" class="search" role="search">
+        <label class="sr-only" for="q">장소 또는 주소 검색</label>
+        <input id="q" name="q" type="search" placeholder="매장명, 주소 검색" enterkeyhint="search" autocomplete="off">
+        <button type="submit" class="search__btn" aria-label="검색">
+          <svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5" fill="none" stroke="currentColor" stroke-width="2"/><path d="M15.4 15.4 21 21" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+        </button>
+      </form>
+    </div>
+
+    <p id="status" class="status" role="status" aria-live="polite"></p>
+    <ul id="candidates" class="candidates" hidden></ul>
+
+    <div id="recommend" class="recommend" hidden></div>
+
+    <div class="chips" role="tablist" aria-label="지역 필터" id="chips"></div>
+  </div>
+
+  <div class="finder">
+    <div class="map-col">
+      <div id="map" class="map" role="application" aria-label="참여 지점 지도"></div>
+      <ul class="legend" aria-label="핀 범례">
+        <li><i class="dot dot--direct"></i>직영점</li>
+        <li><i class="dot dot--fr"></i>가맹점</li>
+      </ul>
+    </div>
+    <div class="list-col">
+      <div class="list-head">
+        <h3 id="list-title">참여 지점 15곳</h3>
+        <span class="muted">영업시간</span>
+      </div>
+      <ul id="list" class="store-list"></ul>
+      <p class="note">*영업시간은 매장 사정에 따라 변동될 수 있습니다.</p>
+    </div>
+  </div>
+</section>
+
+<!-- 혜택 -->
+<section class="dark">
+  <div class="wrap">
+    <p class="eyebrow eyebrow--dark">혜택</p>
+    <h2 class="sec__title">두 가지 혜택, 한 번에.</h2>
+
+    <div class="benefit">
+      <p class="benefit__tag">혜택 1 · 세차 할인</p>
+      <p class="bignum">20<em>%</em></p>
+      <p class="benefit__desc">자동세차 1회권 · 즉시 할인 쿠폰</p>
+      <p class="pricebox">
+        <s class="todo">[정상가]원</s><span class="arrow">→</span><b class="todo">[할인가]원</b>
+      </p>
+    </div>
+
+    <hr class="rule">
+
+    <div class="benefit">
+      <p class="benefit__tag">혜택 2 · 구독 할인</p>
+      <p class="bignum accent">25<em>%</em></p>
+      <p class="benefit__desc">세차 구독권 할인 · 한 달 간 무제한 세차</p>
+      <p class="benefit__sub">전 매장 무제한 ALLPASS · 단골 매장 무제한 PASS</p>
+      <p class="pricebox">
+        <s class="todo">[정상가]원</s><span class="arrow">→</span><b class="todo">[할인가]원</b>
+      </p>
+      <p class="benefit__sub">할인 적용 회차 <span class="todo">[적용 회차]</span></p>
+    </div>
+  </div>
+</section>
+
+<!-- About -->
+<section>
+  <div class="wrap">
+    <p class="eyebrow">About 오토스테이</p>
+    <h2 class="sec__title">노터치 프리미엄<br>세차 브랜드.</h2>
+    <p class="sec__body">
+      오토스테이는 특허 기술을 기반으로 한 <strong>국내 최초 구독형 자동세차 플랫폼</strong>으로,
+      현재 전국 27여 개 매장을 운영하고 있습니다. 노터치 및 소프트 터치 방식의 프리미엄 세차
+      서비스로 차량 상태에 최적화된 케어를 제공합니다.
+    </p>
+    <ul class="stats">
+      <li><b>80<em>bar</em></b><span>초고압 세척<br>35cm 근접 분사</span></li>
+      <li><b>70<em>대</em></b><span>시간당 처리<br>일 600대 이상</span></li>
+      <li><b>21만+</b><span>오토스테이<br>앱 회원</span></li>
+      <li><b class="accent">15개</b><span>이벤트<br>참여 지점</span></li>
+    </ul>
+  </div>
+</section>
+
+<!-- 이용 방법 -->
+<section class="dark">
+  <div class="wrap">
+    <p class="eyebrow eyebrow--dark">이용 방법</p>
+    <h2 class="sec__title">세 단계면 충분합니다.</h2>
+    <ol class="steps">
+      <li>
+        <span class="steps__n">1</span>
+        <div><h3>가까운 참여 지점 확인</h3>
+        <p>위에서 내 위치나 지역을 검색해 가까운 지점을 먼저 확인하세요.</p></div>
+      </li>
+      <li>
+        <span class="steps__n">2</span>
+        <div><h3>할인 쿠폰 받기</h3>
+        <p>SK일렉링크 회원 인증 후 세차 20% · 구독 25% 쿠폰을 받으실 수 있습니다.
+        <span class="todo">[쿠폰 발급 경로]</span></p></div>
+      </li>
+      <li>
+        <span class="steps__n">3</span>
+        <div><h3>지점에서 사용</h3>
+        <p>확인한 지점을 방문해 결제 시 쿠폰을 사용하세요.</p></div>
+      </li>
+    </ol>
+  </div>
+</section>
+
+<!-- CTA -->
+<section class="cta">
+  <div class="wrap">
+    <h2 class="sec__title">지금 시작하세요.</h2>
+    <p class="sec__lead"><span class="todo">[이벤트 기간]</span> · SK일렉링크 회원 전용</p>
+    <a class="btn btn--primary btn--lg todo-link" href="#" data-todo="쿠폰 발급 링크">혜택 받기</a>
+    <a class="btn btn--ghost btn--lg todo-link" href="#" data-todo="오토스테이 앱 링크">오토스테이 앱 다운로드</a>
+  </div>
+</section>
+
+<!-- 유의사항 -->
+<section class="notice">
+  <div class="wrap">
+    <h2 class="notice__head">꼭 읽어주세요!</h2>
+
+    <h3>이벤트 공통</h3>
+    <ul>
+      <li>SK일렉링크 앱 가입 회원을 대상으로 진행됩니다.</li>
+      <li><strong>오토스테이 참여 지점 15곳에 한하여 적용</strong>되며, 그 외 지점에서는 사용하실 수 없습니다.</li>
+      <li>프로모션 기간: <span class="todo">[이벤트 기간]</span></li>
+      <li>본 이벤트는 당사 사정에 따라 변경 또는 조기 종료될 수 있습니다.</li>
+    </ul>
+
+    <h3>오토스테이 세차 할인 쿠폰 (20%)</h3>
+    <ul>
+      <li>자동세차 1회권 <strong>20% 할인</strong> 쿠폰은 오토스테이 앱을 통해 발급됩니다.</li>
+      <li>쿠폰은 <strong>참여 지점 15곳 전용</strong>이며, 그 외 지점에서는 사용할 수 없습니다.</li>
+      <li>유효기간: 발급일로부터 <span class="todo">[쿠폰 유효기간]</span></li>
+      <li>1회 이용 시 쿠폰 1매만 사용 가능하며, 타 쿠폰과 <strong>중복 사용은 불가</strong>합니다.</li>
+      <li>혜택은 <strong>1인 <span class="todo">[n]회</span></strong>에 한하여 적용됩니다.</li>
+      <li>장기 구독자 혜택 등 이미 할인 혜택을 받고 있는 오토스테이 회원은 쿠폰 다운로드는 가능하나 적용이 불가할 수 있습니다.</li>
+    </ul>
+
+    <h3>오토스테이 세차 구독 할인 (25%)</h3>
+    <ul>
+      <li>ALLPASS · PASS <strong>신규 구독 건</strong>에 한하여 월 이용료 25%가 할인됩니다.</li>
+      <li>할인 적용 회차는 <span class="todo">[적용 회차]</span>입니다.</li>
+      <li>기존 구독 회원의 요금제 변경은 할인 대상에서 제외될 수 있습니다.</li>
+    </ul>
+
+    <h3>유의사항</h3>
+    <ul>
+      <li>본 프로모션은 SK일렉링크와 오토스테이 제휴 협약에 따라 운영됩니다.</li>
+      <li>지점까지의 거리는 <strong>직선거리</strong> 기준이며, 실제 이동거리 · 소요시간과 다를 수 있습니다.</li>
+      <li>참여 지점 15곳은 사전 고지 없이 변경될 수 있습니다.</li>
+      <li>SK일렉링크 앱은 AOS/iOS 버전에 따라 업데이트가 필요할 수 있습니다.</li>
+    </ul>
+  </div>
+</section>
+</main>
+
+<footer class="footer">
+  <div class="wrap">
+    <div class="lockup" aria-label="오토스테이 × SK일렉링크">
+      <span class="lockup__as">Autostay</span>
+      <span class="lockup__x">×</span>
+      <span class="lockup__skel"><b>SK</b> electlink</span>
+    </div>
+    <p class="footer__copy">편리한 전기차 생활을 위해<br>먼저 고민하고, 노력하겠습니다.</p>
+    <p class="footer__slogan">On Your Way, Always.</p>
+  </div>
+</footer>
+
+<script src="assets/js/config.js"></script>
+<script src="assets/js/stores.js"></script>
+<script src="assets/js/geo.js"></script>
+<script src="assets/js/app.js"></script>
+</body>
+</html>
