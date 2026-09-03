@@ -329,14 +329,6 @@ body.no-map .map, body.no-map .legend { position: static; }
 .benefit { padding: 34px 0; }
 .benefit__desc { margin-top: 12px; font-size: 16px; font-weight: 500; }
 .benefit__sub { margin-top: 8px; font-size: 13px; color: #86868B; }
-.pricebox {
-  display: inline-flex; align-items: center; gap: 12px;
-  margin-top: 18px; padding: 12px 22px;
-  background: #1D1D1F; border-radius: 999px;
-}
-.pricebox s { color: #86868B; font-size: 15px; }
-.pricebox .arrow { color: var(--cta); font-weight: 700; }
-.pricebox b { color: var(--cta); font-size: 17px; font-weight: 900; }
 .rule { border: 0; border-top: 1px solid #333336; margin: 0; }
 
 /* ── 지표 ─────────────────────────────── */

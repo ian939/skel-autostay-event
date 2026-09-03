@@ -41,9 +41,10 @@ http://localhost:8000
 
 ## 로컬에서 확인하기
 
-`file://`로 열면 **내 위치와 지도가 동작하지 않는다** (geolocation은 보안 컨텍스트를 요구하고,
-`file://`의 오리진은 `null`이라 카카오 도메인 화이트리스트에 매칭되지 않는다).
-반드시 HTTP로 띄운다.
+`file://`로 열면 **장소 검색이 401로 실패하고 내 위치도 막힌다**
+(`file://`의 Origin은 `null`이라 카카오 도메인 화이트리스트에 매칭되지 않고,
+geolocation은 보안 컨텍스트를 요구한다). 지도 타일과 지점 목록은 뜬다.
+확인은 HTTP로 띄워서 한다.
 
 ```bash
 python -m http.server 8000
@@ -87,6 +88,8 @@ assets/js/geo.js            거리 계산 · 표기 · 카카오 링크 (SDK 불
 assets/js/app.js            상태 · 렌더 · 지도 · 내 위치 · 검색
 assets/img/pin-*.svg        마커 (직영 레드 / 가맹 블루 / 선택)
 tools/build_stores.py       지점 데이터 생성기
+tools/build_single.py       단일 HTML 빌더 (앱 웹뷰용)
+dist/index.html             빌드 산출물 — 파일 하나로 합친 버전
 ```
 
 ---
@@ -108,16 +111,79 @@ tools/build_stores.py       지점 데이터 생성기
 
 ---
 
+## 앱 웹뷰에 넣기 (단일 HTML)
+
+`python tools/build_single.py` → **`dist/index.html` 파일 하나 (약 65KB)**.
+CSS·JS·마커 SVG·파비콘이 모두 인라인되어 `assets/` 참조가 0개다.
+
+### 실측한 동작 범위
+
+| 항목 | HTTP(등록 도메인) | `file://` (로컬 에셋) |
+|---|---|---|
+| 지점 목록·필터·거리 정렬 | O | **O** |
+| 지도 타일·마커·확대/축소 | O | **O** (타일 25개, 핀 15개 확인) |
+| 내 위치 (GPS) | O | 웹뷰 권한 설정 필요 |
+| **장소 검색 (키워드/주소)** | O | **X — 401** |
+
+`file://`은 Origin이 `null`이어서 카카오 도메인 화이트리스트에 매칭되지 않는다.
+SDK 스크립트 자체와 타일은 받아지지만, **검색 서브 API가 401로 거부**된다.
+
+### 그래서 권장 방식
+
+**원격 URL 로드**를 권한다. 웹뷰가 `https://ian939.github.io/skel-autostay-event/`
+(또는 자사 도메인)를 그대로 열면 검색까지 전부 동작하고, 페이지 수정 시
+앱 재배포 없이 반영된다.
+
+```kotlin
+// Android
+webView.settings.javaScriptEnabled = true
+webView.settings.domStorageEnabled = true
+webView.settings.setGeolocationEnabled(true)
+webView.webChromeClient = object : WebChromeClient() {
+    override fun onGeolocationPermissionsShowPrompt(
+        origin: String?, callback: GeolocationPermissions.Callback?
+    ) { callback?.invoke(origin, true, false) }   // 앱에서 위치 권한을 이미 받은 경우
+}
+webView.loadUrl("https://ian939.github.io/skel-autostay-event/")
+```
+
+```swift
+// iOS - WKWebView
+let cfg = WKWebViewConfiguration()
+let web = WKWebView(frame: .zero, configuration: cfg)
+web.load(URLRequest(url: URL(string: "https://ian939.github.io/skel-autostay-event/")!))
+// Info.plist: NSLocationWhenInUseUsageDescription 필요
+```
+
+**로컬 에셋으로 넣어야 한다면** `dist/index.html`을 쓰되, 검색이 막히는 것을
+감수해야 한다. 이때는 `file://` 대신 커스텀 스킴이나 로컬 서버로 실제 도메인을
+부여하고 그 도메인을 카카오 콘솔에 등록하면 검색도 살아난다.
+
+- Android: `WebViewAssetLoader`로 `https://appassets.androidplatform.net/` 부여
+  → 이 도메인을 카카오 콘솔에 등록
+- iOS: `WKURLSchemeHandler` 또는 `loadFileURL(_:allowingReadAccessTo:)`
+
+### 어느 방식이든 반드시
+
+1. 배포 URL(또는 위 커스텀 도메인)을 **카카오 콘솔 → 플랫폼 → Web → 사이트 도메인**에 등록.
+   오리진만, 경로 없이.
+2. **인터넷 연결 필수.** 지도 타일과 검색은 런타임에 카카오 서버에서 받아오므로
+   완전 오프라인 동작은 구조적으로 불가능하다.
+3. 위치 권한은 앱(네이티브)에서 먼저 받고 웹뷰에 위임해야 `내 위치`가 동작한다.
+
+---
+
 ## 미확정 항목 (배포 전 교체 필요)
 
 페이지에 `[대괄호]`로 남아 있고, **노란색 배경**으로 눈에 띄게 표시된다.
 
 - `[이벤트 기간]`
-- 세차 1회권 `[정상가]` / `[할인가]`
-- 구독 월 이용료 `[정상가]` / `[할인가]`
 - `[쿠폰 유효기간]`, `[n]회` 발급 제한, `[적용 회차]`
 - `[쿠폰 발급 경로]`
 - CTA 링크 2개 (`혜택 받기`, `앱 다운로드`) — `data-todo` 속성으로 표시
+
+> 금액(정상가/할인가) 표기는 제거했다. 지점별 정상가가 다를 수 있어
+> 단일 금액을 노출하기 어렵고, 20% / 25% 할인율만으로 혜택이 전달된다.
 
 확정 후 값을 채우고, `assets/css/style.css`의 `.todo` 규칙과 마크업의 `class="todo"`를
 제거한다. `.todo-link`의 클릭 차단 핸들러(`app.js`)도 함께 정리한다.
