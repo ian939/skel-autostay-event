@@ -42,7 +42,7 @@ ul, ol { padding: 0; list-style: none; }
 }
 
 .wrap { max-width: 720px; margin: 0 auto; padding: 0 24px; }
-section { padding: 64px 0; }
+section { padding: 52px 0; }
 .muted { color: var(--ink3); }
 .accent { color: var(--blue); }
 
@@ -86,15 +86,15 @@ section { padding: 64px 0; }
 .ico { width: 20px; height: 20px; flex-shrink: 0; }
 
 /* ── 히어로 ─────────────────────────────── */
-.hero { padding: 56px 0 60px; text-align: center; }
+.hero { padding: 44px 0 48px; text-align: center; }
 .hero__title { font-size: 34px; font-weight: 900; line-height: 1.22; }
 .hero__lead { margin-top: 18px; font-size: 15px; line-height: 1.68; color: var(--ink2); }
 .hero__lead strong { color: var(--ink); font-weight: 700; }
-.hero__period { margin: 26px 0 20px; font-size: 14px; color: var(--ink3); }
+.hero__period { margin: 20px 0 16px; font-size: 14px; color: var(--ink3); }
 
 .offer-chips {
   display: grid; grid-template-columns: 1fr 1fr; gap: 10px;
-  margin-top: 28px;
+  margin-top: 22px;
 }
 .offer-chips li {
   padding: 20px 14px; background: var(--card); border-radius: var(--r-md);
@@ -109,7 +109,7 @@ section { padding: 64px 0; }
 
 .lockup {
   display: flex; align-items: center; justify-content: center; gap: 14px;
-  margin-top: 40px;
+  margin-top: 30px;
 }
 .lockup__as {
   display: inline-flex; align-items: center; height: 28px; padding: 0 10px;
@@ -138,7 +138,7 @@ section { padding: 64px 0; }
 .search input::-webkit-search-cancel-button { -webkit-appearance: none; }
 .search__btn {
   display: flex; align-items: center; justify-content: center;
-  width: 40px; height: 40px; flex-shrink: 0;
+  width: 44px; height: 44px; flex-shrink: 0;
   border: 0; border-radius: 50%; background: transparent;
   color: var(--ink2); cursor: pointer;
 }
@@ -169,15 +169,15 @@ section { padding: 64px 0; }
   background: var(--ink); color: #fff; border-radius: var(--r-lg);
 }
 .recommend__tag { font-size: 12px; font-weight: 700; color: var(--cta); }
-.recommend__name { margin-top: 10px; font-size: 21px; font-weight: 900; letter-spacing: -0.03em; }
+.recommend__name { margin-top: 8px; font-size: 20px; font-weight: 900; letter-spacing: -0.03em; }
 .recommend__meta { margin-top: 8px; font-size: 13px; color: #A1A1A6; }
 .recommend__dist {
   display: inline-flex; align-items: baseline; gap: 4px;
-  margin-top: 14px; font-size: 15px; font-weight: 700;
+  margin-top: 12px; font-size: 15px; font-weight: 700;
 }
 .recommend__dist b { font-size: 26px; font-weight: 900; letter-spacing: -0.03em; }
-.recommend__note { margin-top: 6px; font-size: 11px; color: #86868B; }
-.recommend__acts { display: flex; gap: 8px; margin-top: 16px; }
+.recommend__note { margin-top: 6px; font-size: 12px; line-height: 1.5; color: #86868B; }
+.recommend__acts { display: flex; gap: 8px; margin-top: 14px; }
 .recommend__acts .btn { flex: 1 1 0; min-height: 44px; padding: 0 14px; font-size: 14px; }
 .recommend__acts .btn--ghost { color: #fff; border-color: #48484A; }
 
@@ -186,6 +186,11 @@ section { padding: 64px 0; }
   display: flex; gap: 8px; margin-top: 22px;
   overflow-x: auto; scroll-snap-type: x proximity;
   padding-bottom: 4px; scrollbar-width: none;
+  /* 래퍼 좌우 패딩을 상쇄해 칩이 화면 끝까지 흐르게 한다.
+     그렇지 않으면 마지막 칩이 잘린 채 멈춰 스크롤 가능함이 드러나지 않는다. */
+  margin-left: -24px; margin-right: -24px;
+  padding-left: 24px; padding-right: 24px;
+  -webkit-overflow-scrolling: touch;
 }
 .chips::-webkit-scrollbar { display: none; }
 .chips button {
@@ -202,16 +207,28 @@ section { padding: 64px 0; }
 
 /* ── 지도 + 리스트 ──────────────────────── */
 .finder-section { padding-bottom: 0; }
-.finder { margin-top: 24px; }
+.finder { margin-top: 16px; }
+/* 모바일에서 지도까지의 거리를 줄인다 — 설명문은 짧게, 여백은 촘촘히 */
+.finder-section .sec__lead { margin-top: 10px; font-size: 14px; }
+.finder-section .origin-bar { margin-top: 18px; }
+.finder-section .chips { margin-top: 16px; }
+.recommend { margin-top: 14px; padding: 18px 18px 16px; }
 
-.map-col { position: relative; }
+/* 모바일: 지도를 리스트 전체 구간에서 상단에 고정한다.
+   sticky는 "부모 박스 안에서만" 붙어 있으므로, 지도만 sticky로 두면
+   .map-col 높이(=지도 높이)를 벗어나는 즉시 떨어져 나간다.
+   그래서 .map-col을 sticky로 만들고, 형제인 .list-col이 그 아래를 흐르게 한다. */
+.map-col {
+  position: sticky; top: 0; z-index: 3;
+  background: #fff;
+  box-shadow: 0 6px 16px -10px rgba(0,0,0,.35);
+}
 .map {
   width: 100%;
-  height: 58vh;   /* 구형 브라우저 폴백 */
-  height: 58svh;  /* 모바일 툴바로 인한 레이아웃 점프 방지 */
-  min-height: 320px; max-height: 520px;
+  height: 42vh;   /* 구형 브라우저 폴백 */
+  height: 42svh;  /* 모바일 툴바로 인한 레이아웃 점프 방지 */
+  min-height: 260px; max-height: 380px;
   background: var(--card);
-  position: sticky; top: 0; z-index: 2;
 }
 .map-fallback {
   display: flex; flex-direction: column; align-items: center; justify-content: center;
@@ -221,9 +238,16 @@ section { padding: 64px 0; }
 
 .legend {
   display: flex; gap: 14px;
-  padding: 10px 24px; background: #fff;
+  padding: 10px 24px 11px; background: #fff;
   border-bottom: 1px solid var(--line);
   font-size: 12px; color: var(--ink2);
+  position: relative;
+}
+/* 고정된 지도 아래로 리스트가 지나가며 행이 잘려 보이는 것을 완화하는 페이드 */
+.legend::after {
+  content: ""; position: absolute; left: 0; right: 0; top: 100%;
+  height: 14px; pointer-events: none;
+  background: linear-gradient(#fff, rgba(255,255,255,0));
 }
 .legend li { display: flex; align-items: center; gap: 6px; }
 .dot { width: 9px; height: 9px; border-radius: 50%; }
@@ -231,7 +255,7 @@ section { padding: 64px 0; }
 .dot--fr { background: var(--blue); }
 body.no-map .map, body.no-map .legend { position: static; }
 
-.list-col { padding: 0 24px 48px; }
+.list-col { padding: 0 24px 40px; }
 .list-head {
   display: flex; align-items: baseline; justify-content: space-between;
   padding: 20px 0 14px;
@@ -239,34 +263,41 @@ body.no-map .map, body.no-map .legend { position: static; }
 .list-head h3 { font-size: 17px; font-weight: 900; }
 .list-head span { font-size: 12px; }
 
-.store-list { display: flex; flex-direction: column; gap: 9px; }
+.store-list { display: flex; flex-direction: column; gap: 8px; }
 .store-item {
-  width: 100%; padding: 16px 18px; text-align: left;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  grid-template-areas: "top act" "addr act";
+  align-items: center; column-gap: 12px; row-gap: 5px;
+  width: 100%; padding: 14px 16px; text-align: left;
   background: var(--card); border: 1px solid transparent;
   border-radius: var(--r-md); cursor: pointer;
   font-family: inherit; color: inherit;
+  -webkit-tap-highlight-color: transparent;
 }
+.store-item__top  { grid-area: top; }
+.store-item__addr { grid-area: addr; }
+.store-item__foot { grid-area: act; }
 .store-item:hover { background: #EFEFF2; }
 .store-item.is-selected { background: #fff; border-color: var(--ink); }
 .store-item__top { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
 .store-item__name { font-size: 15px; font-weight: 700; }
 .badge {
-  display: inline-flex; align-items: center; height: 20px; padding: 0 7px;
-  border-radius: 5px; font-size: 11px; font-weight: 700;
+  display: inline-flex; align-items: center; height: 22px; padding: 0 8px;
+  border-radius: 5px; font-size: 12px; font-weight: 700;
 }
 .badge--direct { background: #FDEEEE; color: var(--red); }
 .badge--fr { background: #EAF2FC; color: var(--blue); }
 .badge--dist { background: var(--ink); color: #fff; }
-.store-item__addr { margin-top: 7px; font-size: 13px; line-height: 1.5; color: var(--ink3); }
-.store-item__foot {
-  display: flex; align-items: center; justify-content: space-between;
-  gap: 10px; margin-top: 12px;
-}
-.store-item__hours { font-size: 13px; font-weight: 500; color: var(--ink2); }
+.store-item__addr { font-size: 13px; line-height: 1.45; color: var(--ink3); }
+.store-item__foot { display: flex; align-items: center; }
+.store-item__hours { display: none; }   /* 영업시간은 주소 줄에 병기 (행 높이 절감) */
+.store-item__addr .hours { color: var(--ink2); font-weight: 500; }
 .store-item__link {
-  display: inline-flex; align-items: center; height: 36px; padding: 0 14px;
+  display: inline-flex; align-items: center; justify-content: center;
+  min-height: 44px; padding: 0 18px;   /* 모바일 최소 탭 타깃 44px */
   background: #fff; border: 1px solid var(--line); border-radius: 999px;
-  font-size: 13px; font-weight: 700; color: var(--blue);
+  font-size: 14px; font-weight: 700; color: var(--blue);
 }
 .store-item.is-selected .store-item__link { background: var(--card); }
 
@@ -322,13 +353,35 @@ body.no-map .map, body.no-map .legend { position: static; }
 .cta .btn--ghost { display: flex; }
 
 /* ── 유의사항 ─────────────────────────── */
-.notice { background: var(--card); padding: 52px 0 60px; }
+.notice { background: var(--card); padding: 44px 0 52px; }
 .notice__head {
   font-size: 15px; font-weight: 700; color: var(--cta);
   text-align: center; margin-bottom: 32px;
 }
-.notice h3 { font-size: 16px; font-weight: 700; margin: 28px 0 12px; }
-.notice h3:first-of-type { margin-top: 0; }
+/* 유의사항은 모바일에서 접어둔다. 펼쳐두면 1100px 이상을 차지해
+   푸터까지 도달하는 스크롤이 크게 늘어난다. */
+.acc {
+  background: #fff; border-radius: var(--r-sm);
+  margin-bottom: 8px; overflow: hidden;
+}
+.acc > summary {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 10px; min-height: 52px; padding: 14px 16px;
+  font-size: 15px; font-weight: 700; color: var(--ink);
+  cursor: pointer; list-style: none;
+  -webkit-tap-highlight-color: transparent;
+}
+.acc > summary::-webkit-details-marker { display: none; }
+.acc > summary::after {
+  content: ""; flex-shrink: 0;
+  width: 9px; height: 9px; margin-right: 4px;
+  border-right: 2px solid var(--ink3); border-bottom: 2px solid var(--ink3);
+  transform: rotate(45deg) translateY(-2px);
+  transition: transform .18s ease;
+}
+.acc[open] > summary::after { transform: rotate(-135deg) translateY(-2px); }
+.acc > ul { padding: 0 16px 16px; }
+
 .notice ul { display: flex; flex-direction: column; gap: 9px; }
 .notice li {
   position: relative; padding-left: 12px;
@@ -342,6 +395,36 @@ body.no-map .map, body.no-map .legend { position: static; }
 .footer .lockup { margin-top: 0; }
 .footer__copy { margin-top: 24px; font-size: 14px; line-height: 1.72; color: var(--ink3); }
 .footer__slogan { margin-top: 26px; font-size: 14px; font-weight: 700; }
+
+/* ── 모바일 고정 CTA 바 ─────────────────── */
+/* 페이지가 7~8화면이라 하단 CTA가 멀다. 주요 행동을 항상 손 닿는 곳에 둔다. */
+.mbar {
+  position: fixed; left: 0; right: 0; bottom: 0; z-index: 50;
+  display: flex; gap: 8px;
+  padding: 10px 16px;
+  padding-bottom: calc(10px + env(safe-area-inset-bottom));  /* 아이폰 홈바 */
+  background: rgba(255,255,255,.94);
+  backdrop-filter: saturate(180%) blur(12px);
+  -webkit-backdrop-filter: saturate(180%) blur(12px);
+  border-top: 1px solid var(--line);
+}
+.mbar a {
+  display: flex; align-items: center; justify-content: center;
+  min-height: 50px; border-radius: 999px;
+  font-size: 16px; font-weight: 700; letter-spacing: -0.02em;
+  -webkit-tap-highlight-color: transparent;
+}
+.mbar__ghost { flex: 0 0 38%; background: var(--card); color: var(--ink); }
+.mbar__cta   { flex: 1 1 auto; background: var(--cta); color: #fff; }
+.mbar__cta:hover { color: #fff; }
+
+/* 고정 바에 콘텐츠가 가리지 않도록 문서 하단 여백 확보 */
+body { padding-bottom: calc(72px + env(safe-area-inset-bottom)); }
+
+@media (min-width: 880px) {
+  .mbar { display: none; }
+  body { padding-bottom: 0; }
+}
 
 /* ── 데스크톱 ─────────────────────────── */
 @media (min-width: 880px) {

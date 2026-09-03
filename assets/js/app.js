@@ -156,9 +156,9 @@
             '<span class="badge ' + badgeClass(s.type) + '">' + esc(s.type) + '</span>' +
             dist +
           '</span>' +
-          '<span class="store-item__addr">' + esc(s.addr) + '</span>' +
+          '<span class="store-item__addr">' + esc(s.addr) +
+            '<br><span class="hours">' + esc(s.hours) + '</span></span>' +
           '<span class="store-item__foot">' +
-            '<span class="store-item__hours">' + esc(s.hours) + '</span>' +
             '<span class="store-item__link" data-route="' + s.id + '">길찾기</span>' +
           '</span>' +
         '</button>';
@@ -191,11 +191,45 @@
     render();
 
     if (store && opts.pan && mapReady) {
-      map.setLevel(MAP_FOCUS_LEVEL, { anchor: new kakao.maps.LatLng(store.lat, store.lng) });
-      map.panTo(new kakao.maps.LatLng(store.lat, store.lng));
+      // setLevel(anchor) + panTo를 같이 부르면 애니메이션 pan이 확대를 가로채
+      // 배율은 그대로인 채 위치만 어긋난다. 중심과 레벨을 한 번에 확정한다.
+      var pos = new kakao.maps.LatLng(store.lat, store.lng);
+      map.setLevel(MAP_FOCUS_LEVEL);
+      map.setCenter(pos);
+      // 지도 컨테이너 상단이 화면 밖으로 밀려 있으면 컨테이너 중앙 = 화면 밖이 된다.
+      // 잘려나간 만큼 지도를 되돌려 핀이 보이는 영역 가운데 오게 한다.
+      var box = el.map.getBoundingClientRect();
+      var hidden = Math.max(0, -box.top);
+      if (hidden > 8) {
+        var pt = map.getProjection().containerPointFromCoords(pos);
+        pt.y += hidden / 2;
+        map.setCenter(map.getProjection().coordsFromContainerPoint(pt));
+      }
     }
-    var row = rowEls[id];
-    if (row && opts.scroll !== false) row.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    if (opts.scroll !== false) {
+      // render()가 리스트를 새로 만들었으므로 다음 프레임에 측정한다.
+      // 즉시 측정하면 교체 전 노드의 좌표를 읽어 스크롤이 어긋난다.
+      var rid = id;
+      requestAnimationFrame(function () {
+        var row = rowEls[rid];
+        if (row) revealRow(row);
+      });
+    }
+  }
+
+  // 고정된 지도(.map-col) 높이만큼 오프셋을 두고 행을 노출한다.
+  // scrollIntoView는 sticky 요소를 모르기 때문에 그냥 쓰면 행이 지도 아래에 가린다.
+  function revealRow(row) {
+    var r = row.getBoundingClientRect();
+    var col = document.querySelector('.map-col');
+    var stuck = col ? col.getBoundingClientRect() : null;
+    var top = stuck && stuck.top <= 1 ? stuck.bottom : 0;   // 지도가 붙어 있을 때만 보정
+    var gap = 12;
+    if (r.top < top + gap) {
+      window.scrollBy({ top: r.top - top - gap, behavior: 'smooth' });
+    } else if (r.bottom > window.innerHeight - 84) {         // 하단 고정 CTA 바 여유
+      window.scrollBy({ top: r.bottom - window.innerHeight + 84, behavior: 'smooth' });
+    }
   }
 
   // ── 지도 ─────────────────────────────────────────────
@@ -256,7 +290,7 @@
     };
 
     // 오버레이는 인스턴스 1개를 재사용한다 (15개 생성 금지)
-    overlay = new kakao.maps.CustomOverlay({ yAnchor: 1.34, zIndex: 20 });
+    overlay = new kakao.maps.CustomOverlay({ yAnchor: 1.62, zIndex: 20 });
 
     STORES.forEach(function (s) {
       var mk = new kakao.maps.Marker({
